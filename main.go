@@ -32,7 +32,7 @@ func main() {
 
 func getName(r io.Reader, w io.Writer) (string, error) {
 	msg := "Your Name please? Press the Enter key when done. \n"
-	fmt.Fprintf(w, msg)
+	fmt.Fprint(w, msg)
 
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
@@ -55,7 +55,7 @@ var usageString = fmt.Sprintf(`usage: %s <Integer> [-h] --help
 A greeter application which prints the name you entered <Integer> times`, os.Args[0])
 
 func printUsage(w io.Writer) {
-	fmt.Fprintf(w, usageString)
+	fmt.Fprint(w, usageString)
 }
 func parseArgs(args []string) (config, error) {
 	var numTimes int
@@ -77,6 +77,9 @@ func parseArgs(args []string) (config, error) {
 }
 
 func validateArgs(c config) error {
+	if c.printUsage {
+		return nil
+	}
 	if !(c.numTimes > 0) {
 		return errors.New("must specify number greater than 0")
 	}
@@ -99,6 +102,6 @@ func runCmd(r io.Reader, w io.Writer, c config) error {
 func greetUser(c config, name string, w io.Writer) {
 	msg := fmt.Sprintf("Nice to meet you %s\n", name)
 	for i := 0; i < c.numTimes; i++ {
-		fmt.Fprintf(w, msg)
+		fmt.Fprint(w, msg)
 	}
 }

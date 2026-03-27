@@ -1,0 +1,36 @@
+1. without TestMain
+go test
+  ↓
+Go generates an internal test main()
+  ↓
+That main() automatically discovers and runs all TestXxx functions
+  ↓
+Program exits with aggregated test result
+
+
+
+2. with TestMain
+go test
+  ↓
+Go detects custom TestMain(m *testing.M)
+  ↓
+Your TestMain() is executed instead of the default
+  ↓
+You explicitly call m.Run()
+  ↓
+m.Run() executes all TestXxx functions
+  ↓
+Control returns to TestMain()
+  ↓
+You perform cleanup (optional)
+  ↓
+You call os.Exit(code)
+
+
+
+3.
+- TestMain (setup/teardown)
+- Helpers (shared utilities like runCLI)
+- Unit tests (pure logic)
+- Integration tests (IO / orchestration)
+- CLI tests (main() via subprocess)
