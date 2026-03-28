@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 var binaryPath = "./application.exe"
 
 type testConfig struct {
-	config
+	Config
 	err  error
 	args []string
 }
@@ -21,18 +21,18 @@ func TestParseArgs(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    []string
-		want    config
+		want    Config
 		wantErr string
 	}{
 		{
 			name: "help flag",
 			args: []string{"-h"},
-			want: config{printUsage: true},
+			want: Config{PrintUsage: true},
 		},
 		{
 			name: "valid number",
 			args: []string{"3"},
-			want: config{numTimes: 3},
+			want: Config{NumTimes: 3},
 		},
 		{
 			name:    "no args",
@@ -53,7 +53,7 @@ func TestParseArgs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseArgs(tt.args)
+			got, err := ParseArgs(tt.args)
 
 			if tt.wantErr != "" {
 				if err == nil {
@@ -79,28 +79,28 @@ func TestParseArgs(t *testing.T) {
 func TestValidateArgs(t *testing.T) {
 	tests := []struct {
 		name    string
-		cfg     config
+		cfg     Config
 		wantErr string
 	}{
 		{
 			name: "valid",
-			cfg:  config{numTimes: 2},
+			cfg:  Config{NumTimes: 2},
 		},
 		{
 			name:    "zero",
-			cfg:     config{numTimes: 0},
+			cfg:     Config{NumTimes: 0},
 			wantErr: "must specify number greater than 0",
 		},
 		{
 			name:    "negative",
-			cfg:     config{numTimes: -1},
+			cfg:     Config{NumTimes: -1},
 			wantErr: "must specify number greater than 0",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateArgs(tt.cfg)
+			err := ValidateArgs(tt.cfg)
 
 			if tt.wantErr != "" {
 				if err == nil || err.Error() != tt.wantErr {
@@ -140,7 +140,7 @@ func TestGetName(t *testing.T) {
 			in := strings.NewReader(tt.input)
 			out := &bytes.Buffer{}
 
-			got, err := getName(in, out)
+			got, err := GetName(in, out)
 
 			if tt.wantErr != "" {
 				if err == nil || err.Error() != tt.wantErr {
@@ -163,25 +163,25 @@ func TestGetName(t *testing.T) {
 func TestRunCmd(t *testing.T) {
 	tests := []struct {
 		name     string
-		cfg      config
+		cfg      Config
 		input    string
 		expected string
 		wantErr  bool
 	}{
 		{
 			name:     "print usage",
-			cfg:      config{printUsage: true},
-			expected: usageString,
+			cfg:      Config{PrintUsage: true},
+			expected: UsageString,
 		},
 		{
 			name:     "normal flow",
-			cfg:      config{numTimes: 2},
+			cfg:      Config{NumTimes: 2},
 			input:    "Ankur\n",
 			expected: "Your Name please? Press the Enter key when done. \nNice to meet you Ankur\nNice to meet you Ankur\n",
 		},
 		{
 			name:    "empty name",
-			cfg:     config{numTimes: 1},
+			cfg:     Config{NumTimes: 1},
 			input:   "\n",
 			wantErr: true,
 		},
@@ -192,7 +192,7 @@ func TestRunCmd(t *testing.T) {
 			in := strings.NewReader(tt.input)
 			out := &bytes.Buffer{}
 
-			err := runCmd(in, out, tt.cfg)
+			err := RunCmd(in, out, tt.cfg)
 
 			if tt.wantErr {
 				if err == nil {
@@ -212,22 +212,15 @@ func TestRunCmd(t *testing.T) {
 	}
 }
 
-// TestMain
-// 1. This is not a separate test case. It is a test runner controller.
-// 2. This is a custom entry point for the test binary itself.
-
 func TestMain(m *testing.M) {
-	// build the binary
 	cmd := exec.Command("go", "build", "-o", binaryPath)
 	if err := cmd.Run(); err != nil {
 		fmt.Print("failed to build binary:", err)
 		os.Exit(1)
 	}
 
-	// run tests
 	code := m.Run()
 
-	// cleanup
 	os.Remove(binaryPath)
 	os.Exit(code)
 }
@@ -235,7 +228,6 @@ func TestMain(m *testing.M) {
 func runCLI(args []string, input string) (string, int, error) {
 	cmd := exec.Command(binaryPath, args...)
 
-	// simulate stdin
 	cmd.Stdin = strings.NewReader(input)
 
 	var out bytes.Buffer

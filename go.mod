@@ -1,3 +1,3 @@
-module ankurdubey28/github.com/go-cil
+module ankurdubey28/github.com/go-cli
 
 go 1.25.8
