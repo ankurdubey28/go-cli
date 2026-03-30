@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"bufio"
@@ -8,6 +8,27 @@ import (
 	"os"
 	"strconv"
 )
+
+func main() {
+
+	c, err := ParseArgs(os.Args[1:])
+	if err != nil {
+		fmt.Fprintln(os.Stdout, err)
+		PrintUsage(os.Stdout)
+		os.Exit(1)
+	}
+	err = ValidateArgs(c)
+	if err != nil {
+		fmt.Fprintln(os.Stdout, err)
+		PrintUsage(os.Stdout)
+		os.Exit(1)
+	}
+	err = RunCmd(os.Stdin, os.Stdout, c)
+	if err != nil {
+		fmt.Fprintln(os.Stdout, err)
+		os.Exit(1)
+	}
+}
 
 func GetName(r io.Reader, w io.Writer) (string, error) {
 	msg := "Your Name please? Press the Enter key when done. \n"
